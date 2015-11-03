@@ -3,12 +3,15 @@ from collections import deque
 
 
 class HuffmanTree(BinaryTree):
-    def __init__(self, value=None, leftNode=None, rightNode=None):
-        super().__init__(value=value, leftNode=leftNode, rightNode=rightNode)
+    def __init__(self, value=None, left=None, right=None):
+        super().__init__(value=value, left=left, right=right)
         self.leftCode = 0
         self.rightCode = 1
 
     def getEncoding(self, encoding=None, path=None):
+        """extract a encoding dictionary from the huffman tree
+        the keys are the symbols, the values are the corresponding encodings
+        DO NOT pass in any parameter"""
         if encoding is None:
             encoding = {}
 
@@ -29,22 +32,41 @@ class HuffmanTree(BinaryTree):
         return encoding
 
 
-def huffmanEncoding(freqDict):
-    keys = list(freqDict.keys())
-    for key in keys:
-        freqDict[HuffmanTree(value=key)] = freqDict.pop(key)
+def buildHuffmanTree(freqDict):
+    shadowDict={HuffmanTree(key):value for key,value in freqDict.items()}
 
-    while len(freqDict) > 1:
-        leastNode = min(freqDict, key=freqDict.get)
-        leastFreq = freqDict.pop(leastNode)
+    while len(shadowDict) > 1:
+        leastNode = min(shadowDict, key=shadowDict.get)
+        leastFreq = shadowDict.pop(leastNode)
 
-        secondNode = min(freqDict, key=freqDict.get)
-        secondFreq = freqDict.pop(secondNode)
+        secondNode = min(shadowDict, key=shadowDict.get)
+        secondFreq = shadowDict.pop(secondNode)
 
-        tree = HuffmanTree(leftNode=leastNode, rightNode=secondNode)
-        freqDict[tree] = leastFreq + secondFreq
+        tree = HuffmanTree(left=leastNode, right=secondNode)
+        shadowDict[tree] = leastFreq + secondFreq
 
-    return list(freqDict.keys())[0].getEncoding()
+    return list(shadowDict.keys())[0]
+
+
+def huffmanEncode(encoding, pattern):
+    code = ''
+    for symbol in pattern:
+        code += ''.join([str(x) for x in list(encoding[symbol])])
+    return code
+
+
+def huffmanDecode(tree, code):
+    pattern = ''
+    node = tree
+    for digit in code:
+        if int(digit) == 0:
+            node = node.left
+        else:
+            node = node.right
+        if node.isLeaf():
+            pattern += node.value
+            node = tree
+    return pattern
 
 
 if __name__ == '__main__':
@@ -52,13 +74,19 @@ if __name__ == '__main__':
                 'B': 1 / 2,
                 'C': 1 / 12,
                 'D': 1 / 12}
-    encoding = huffmanEncoding(freqDict)
-    print(encoding)
+    tree = buildHuffmanTree(freqDict)
+    print(tree.getEncoding())
+    code = huffmanEncode(tree.getEncoding(), 'ABCD')
+    print(code)
+    print(huffmanDecode(tree, code))
 
     freqDict = {'A': 0.11,
                 'E': 0.25,
                 'I': 0.20,
                 'O': 0.35,
                 'U': 0.09}
-    encoding = huffmanEncoding(freqDict)
-    print(encoding)
+    tree = buildHuffmanTree(freqDict)
+    print(tree.getEncoding())
+    code = huffmanEncode(tree.getEncoding(), 'AEIOU')
+    print(code)
+    print(huffmanDecode(tree, code))

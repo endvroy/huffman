@@ -1,8 +1,8 @@
-class BinaryTree():
-    def __init__(self, value=None, leftNode=None, rightNode=None):
+class BinaryTree:
+    def __init__(self, value=None, left=None, right=None):
         self.value = value
-        self.left = leftNode
-        self.right = rightNode
+        self.left = left
+        self.right = right
 
     def setValue(self, value):
         self.value = value
